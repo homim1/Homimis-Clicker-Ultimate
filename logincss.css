@@ -8,7 +8,6 @@ body {
 
 }
 .container { 
-
     background: white; 
     padding: 2rem; 
     border-radius: 8px; 
@@ -41,4 +40,4 @@ span {
     color: #007bff; 
     cursor: pointer; 
     text-decoration: underline;
- }
+}

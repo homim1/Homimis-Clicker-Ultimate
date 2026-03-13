@@ -31,10 +31,6 @@
 Купить Автоклик (+1/сек) — Цена: 500
 </button>
 
-<button id="btn-rebirth" class="shop-btn rebirth">
-ПЕРЕРОЖДЕНИЕ (x2 доход) — Цена: 2000
-</button>
-
 </div>
 
 <button id="btn-main">КЛИКАТЬ!</button>
@@ -47,166 +43,173 @@
 </div>
 
 <script>
+const currentUser = localStorage.getItem('currentUser');
 
-const currentUser = localStorage.getItem("currentUser");
-
-if(!currentUser){
-location.href = "login.html";
+if (!currentUser) {
+    window.location.href = 'login.html';
 }
 
 document.getElementById("logout-btn").innerText =
 "Выйти (" + currentUser + ")";
 
-const userKey = "clicker_data_" + currentUser;
+const userKey = `clicker_data_${currentUser}`;
 
 let savedData = JSON.parse(localStorage.getItem(userKey)) || {
-score:0,
-power:1,
-auto:0,
-mult:1
+    score: 0,
+    power: 1,
+    auto: 0,
+    powerPrice: 100,
+    autoPrice: 500
 };
 
 let score = Number(savedData.score);
 let power = Number(savedData.power);
 let auto = Number(savedData.auto);
-let mult = Number(savedData.mult);
+let powerPrice = savedData.powerPrice || 100;
+let autoPrice = savedData.autoPrice || 500;
 
-const display = document.getElementById("clicks");
-const powerDisplay = document.getElementById("cpc");
-const autoDisplay = document.getElementById("auto-val");
-const multDisplay = document.getElementById("mult-val");
-const leaderboardDiv = document.querySelector(".leaderboard");
+const display = document.getElementById('clicks');
+const powerDisplay = document.getElementById('cpc');
+const autoDisplay = document.getElementById('auto-val');
+const leaderboardDiv = document.querySelector('.leaderboard');
 
-function updateUI(){
+function updateUI() {
+
+if (!powerPrice || powerPrice < 1) powerPrice = 100;
+if (!autoPrice || autoPrice < 1) autoPrice = 500;
 
 display.innerText = Math.floor(score);
 powerDisplay.innerText = power;
 autoDisplay.innerText = auto;
-multDisplay.innerText = mult;
 
-const data = {score,power,auto,mult};
-localStorage.setItem(userKey,JSON.stringify(data));
+document.getElementById('buy-power').innerText =
+`Улучшить клик (+1) — Цена: ${Math.floor(powerPrice)}`;
 
+document.getElementById('buy-auto').innerText =
+`Купить Автоклик (+1/сек) — Цена: ${Math.floor(autoPrice)}`;
+
+const dataToSave = {
+score,
+power,
+auto,
+powerPrice,
+autoPrice
+};
+
+localStorage.setItem(userKey, JSON.stringify(dataToSave));
 }
 
-function renderLeaderboard(){
+function renderLeaderboard() {
 
-leaderboardDiv.innerHTML="<h1>Leaderboard</h1>";
+leaderboardDiv.innerHTML = '<h1>Leaderboard:</h1>';
 
-let players=[];
+let allPlayers = [];
 
-for(let i=0;i<localStorage.length;i++){
+for (let i = 0; i < localStorage.length; i++) {
 
-let key=localStorage.key(i);
+let key = localStorage.key(i);
 
-if(key.startsWith("clicker_data_")){
+if (key.startsWith('clicker_data_')) {
 
-let name=key.replace("clicker_data_","");
-let data=JSON.parse(localStorage.getItem(key));
+let name = key.replace('clicker_data_', '');
+let data = JSON.parse(localStorage.getItem(key));
 
-players.push({
-name:name,
-score:data.score
+allPlayers.push({
+name: name,
+score: data.score
+});
+}
+}
+
+allPlayers.sort((a, b) => b.score - a.score);
+
+allPlayers.slice(0, 10).forEach((player, index) => {
+
+const item = document.createElement('div');
+
+if (player.name === currentUser) {
+item.style.color = "gold";
+item.style.fontWeight = "bold";
+}
+
+item.innerHTML =
+`${index + 1}. ${player.name} — ${Math.floor(player.score)}`;
+
+leaderboardDiv.appendChild(item);
+});
+}
+
+function logout() {
+localStorage.removeItem('currentUser');
+window.location.href = 'login.html';
+}
+
+document.getElementById("logout-btn").onclick = logout;
+
+document.getElementById('btn-main').addEventListener('click', () => {
+
+score += power;
+
+updateUI();
+
 });
 
-}
+document.getElementById('buy-power').addEventListener('click', () => {
+
+if (score >= powerPrice) {
+
+score -= powerPrice;
+
+power += 1;
+
+powerPrice = Math.floor(powerPrice * 1.5);
+
+updateUI();
+
+} else {
+
+alert("Недостаточно кликов!");
 
 }
-
-players.sort((a,b)=>b.score-a.score);
-
-players.slice(0,10).forEach((p,i)=>{
-
-const div=document.createElement("div");
-
-if(p.name===currentUser){
-div.style.color="gold";
-div.style.fontWeight="bold";
-}
-
-div.innerHTML=`${i+1}. ${p.name} — ${Math.floor(p.score)}`;
-
-leaderboardDiv.appendChild(div);
 
 });
 
-}
+document.getElementById('buy-auto').addEventListener('click', () => {
 
-function logout(){
-localStorage.removeItem("currentUser");
-location.href="login.html";
-}
+if (score >= autoPrice) {
 
-document.getElementById("logout-btn").onclick=logout;
+score -= autoPrice;
 
-document.getElementById("btn-main").onclick=()=>{
+auto += 1;
 
-score += power * mult;
+autoPrice = Math.floor(autoPrice * 1.5);
+
 updateUI();
 
-};
+} else {
 
-document.getElementById("buy-power").onclick=()=>{
+alert("Недостаточно кликов!");
 
-if(score>=100){
-score-=100;
-power++;
-updateUI();
-}else{
-alert("Недостаточно кликов");
 }
 
-};
+});
 
-document.getElementById("buy-auto").onclick=()=>{
+setInterval(() => {
 
-if(score>=500){
-score-=500;
-auto++;
-updateUI();
-}else{
-alert("Недостаточно кликов");
-}
+if (auto > 0) {
 
-};
-
-document.getElementById("btn-rebirth").onclick=()=>{
-
-if(score>=2000){
-
-if(confirm("Сбросить прогресс ради x2?")){
-
-score=0;
-power=1;
-auto=0;
-mult*=2;
+score += auto;
 
 updateUI();
 
 }
 
-}else{
-alert("Нужно 2000 кликов");
-}
+}, 1000);
 
-};
-
-setInterval(()=>{
-
-if(auto>0){
-
-score += auto * mult;
-updateUI();
-
-}
-
-},1000);
-
-setInterval(renderLeaderboard,3000);
+setInterval(renderLeaderboard, 3000);
 
 updateUI();
 renderLeaderboard();
-
 </script>
 
 </body>
