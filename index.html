@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Homimis Clicker: Ultimate</title>
+    <link rel="stylesheet" href="grid.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <button onclick="logout()" style="position:absolute; top:10px; right:10px;">Выйти (${currentUser})</button>
+<div class="content">
+    <div class="container">
+    <h2><img src="Снимок экрана 2026-03-12 211303.png" alt="homimi's Clicker"></h2>
+    <div class="stat">Клики: <b id="clicks">0</b></div>
+    <div class="stat">Сила клика: <b id="cpc">1</b> (x<span id="mult-val">1</span>)</div>
+    <div class="stat">Автоклик: <b id="auto-val">0</b> сек.</div>
+
+    <div class="shop">
+        <p><b>Магазин:</b></p>
+        <button id="buy-power" class="shop-btn">Улучшить клик (+1) — Цена: 100</button>
+        <button id="buy-auto" class="shop-btn">Купить Автоклик (+1/сек) — Цена: 500</button>
+        <button id="btn-rebirth" class="shop-btn rebirth">ПЕРЕРОЖДЕНИЕ (x2 доход) — Цена: 2000</button>
+    </div>
+
+    <button id="btn-main">КЛИКАТЬ!</button>
+    </div>
+    <!-- leaderbord -->
+    <div class="leaderbord">
+        <h1>leaderbord:</h1>
+    </div>
+
+</div>
+<script>
+    // --- 1. ПРОВЕРКА АВТОРИЗАЦИИ ---
+const currentUser = localStorage.getItem('currentUser');
+
+// Если пользователь не залогинен — выкидываем на страницу входа
+if (!currentUser) {
+    window.location.href = 'login.html'; 
+}
+
+// Ключ для хранения данных именно этого пользователя
+const userKey = `clicker_data_${currentUser}`;
+
+// --- 2. ЗАГРУЗКА ДАННЫХ ИЗ LOCALSTORAGE ---
+// Пытаемся достать объект с данными, если его нет — создаем стандартный
+let savedData = JSON.parse(localStorage.getItem(userKey)) || { 
+    score: 0, 
+    power: 1, 
+    auto: 0, 
+    mult: 1 
+};
+
+let score = Number(savedData.score);
+let power = Number(savedData.power);
+let auto = Number(savedData.auto);
+let mult = Number(savedData.mult);
+
+// --- 3. ЭЛЕМЕНТЫ ИНТЕРФЕЙСА ---
+const display = document.getElementById('clicks');
+const powerDisplay = document.getElementById('cpc');
+const autoDisplay = document.getElementById('auto-val');
+const multDisplay = document.getElementById('mult-val');
+const leaderboardDiv = document.querySelector('.leaderbord');
+
+// --- 4. ОСНОВНЫЕ ФУНКЦИИ ---
+
+function updateUI() {
+    // Обновляем текст на экране
+    display.innerText = Math.floor(score);
+    powerDisplay.innerText = power;
+    autoDisplay.innerText = auto;
+    multDisplay.innerText = mult;
+    
+    // Сохраняем прогресс конкретного игрока
+    const dataToSave = { score, power, auto, mult };
+    localStorage.setItem(userKey, JSON.stringify(dataToSave));
+    
+    // Обновляем таблицу лидеров
+    renderLeaderboard();
+}
+
+function renderLeaderboard() {
+    leaderboardDiv.innerHTML = '<h1>Leaderboard:</h1>';
+    let allPlayers = [];
+
+    // Пробегаемся по всему хранилищу браузера
+    for (let i = 0; i < localStorage.length; i++) {
+        let key = localStorage.key(i);
+        
+        // Ищем ключи, которые начинаются на 'clicker_data_'
+        if (key.startsWith('clicker_data_')) {
+            let name = key.replace('clicker_data_', '');
+            let data = JSON.parse(localStorage.getItem(key));
+            allPlayers.push({ name: name, score: data.score });
+        }
+    }
+
+    // Сортируем: у кого больше очков — тот выше
+    allPlayers.sort((a, b) => b.score - a.score);
+
+    // Выводим топ-10 игроков
+    allPlayers.slice(0, 10).forEach((player, index) => {
+        const item = document.createElement('div');
+        item.style.padding = "5px";
+        item.style.borderBottom = "1px solid #444";
+        
+        // Подсвечиваем текущего игрока золотым цветом
+        if (player.name === currentUser) {
+            item.style.color = "#ffd700";
+            item.style.fontWeight = "bold";
+        }
+
+        item.innerHTML = `<span>${index + 1}. ${player.name}</span> — <b>${Math.floor(player.score)}</b>`;
+        leaderboardDiv.appendChild(item);
+    });
+}
+
+function logout() {
+    localStorage.removeItem('currentUser');
+    window.location.href = 'login.html';
+}
+
+// --- 5. ОБРАБОТЧИКИ СОБЫТИЙ ---
+
+// Клик по главной кнопке
+document.getElementById('btn-main').addEventListener('click', () => {
+    score += (power * mult);
+    updateUI();
+});
+
+// Покупка силы клика
+document.getElementById('buy-power').addEventListener('click', () => {
+    if (score >= 100) {
+        score -= 100;
+        power += 1;
+        updateUI();
+    } else {
+        alert("Недостаточно кликов!");
+    }
+});
+
+// Покупка автоклика
+document.getElementById('buy-auto').addEventListener('click', () => {
+    if (score >= 500) {
+        score -= 500;
+        auto += 1;
+        updateUI();
+    } else {
+        alert("Недостаточно кликов!");
+    }
+});
+
+// Перерождение
+document.getElementById('btn-rebirth').addEventListener('click', () => {
+    if (score >= 2000) {
+        if (confirm("Сбросить прогресс ради x2 множителя?")) {
+            score = 0;
+            power = 1;
+            auto = 0;
+            mult *= 2;
+            updateUI();
+        }
+    } else {
+        alert("Нужно 2000 кликов!");
+    }
+});
+
+// Цикл автоклика (раз в секунду)
+setInterval(() => {
+    if (auto > 0) {
+        score += (auto * mult);
+        updateUI();
+    }
+}, 1000);
+
+// Инициализация при загрузке страницы
+updateUI();
+</script>
+<!-- <script>
+    // Проверка авторизации
+const currentUser = localStorage.getItem('currentUser');
+if (!currentUser) {
+    window.location.href = 'login.html'; // Если не вошел, кидаем на вход
+}
+
+// Приветствие и Кнопка выхода (опционально в HTML добавь id="username")
+// document.getElementById('username').innerText = currentUser;
+
+function logout() {
+    localStorage.removeItem('currentUser');
+    window.location.href = 'login.html';
+}
+
+    // --- ДАННЫЕ (Загрузка или стандарт) ---
+    let score = Number(localStorage.getItem('score')) || 0;
+    let power = Number(localStorage.getItem('power')) || 1;
+    let auto = Number(localStorage.getItem('auto')) || 0;
+    let mult = Number(localStorage.getItem('mult')) || 1;
+
+    // --- ЭЛЕМЕНТЫ ---
+    const display = document.getElementById('clicks');
+    const powerDisplay = document.getElementById('cpc');
+    const autoDisplay = document.getElementById('auto-val');
+    const multDisplay = document.getElementById('mult-val');
+
+    function updateUI() {
+        display.innerText = Math.floor(score);
+        powerDisplay.innerText = power;
+        autoDisplay.innerText = auto;
+        multDisplay.innerText = mult;
+        
+        // Сохранение
+        localStorage.setItem('score', score);
+        localStorage.setItem('power', power);
+        localStorage.setItem('auto', auto);
+        localStorage.setItem('mult', mult);
+    }
+
+    // --- ЛОГИКА ---
+
+    // Обычный клик
+    document.getElementById('btn-main').addEventListener('click', () => {
+        score += (power * mult);
+        updateUI();
+    });
+
+    // Купить +1 к силе
+    document.getElementById('buy-power').addEventListener('click', () => {
+        if (score >= 100) {
+            score -= 100;
+            power += 1;
+            updateUI();
+        }
+    });
+
+    // Купить Автоклик
+    document.getElementById('buy-auto').addEventListener('click', () => {
+        if (score >= 500) {
+            score -= 500;
+            auto += 1;
+            updateUI();
+        }
+    });
+
+    // Перерождение
+    document.getElementById('btn-rebirth').addEventListener('click', () => {
+        if (score >= 2000) {
+            if (confirm("Сбросить прогресс ради удвоения множителя?")) {
+                score = 0;
+                power = 1;
+                auto = 0;
+                mult *= 2; // Удваиваем общий множитель
+                updateUI();
+            }
+        }
+    });
+
+    // ЦИКЛ АВТОКЛИКА (работает раз в секунду)
+    setInterval(() => {
+        if (auto > 0) {
+            score += (auto * mult);
+            updateUI();
+        }
+    }, 1000);
+
+    // Запуск при загрузке
+    updateUI();
+</script> -->
+
+</body>
+</html>
