@@ -1,54 +1,69 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Homimis Clicker: Ultimate</title>
-    <link rel="stylesheet" href="grid.css">
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Homimis Clicker: Ultimate</title>
+<link rel="stylesheet" href="grid.css">
+<link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <button onclick="logout()" style="position:absolute; top:10px; right:10px;">Выйти (${currentUser})</button>
+
+<button id="logout-btn" style="position:absolute; top:10px; right:10px;"></button>
+
 <div class="content">
-    <div class="container">
-    <h2><img src="Снимок экрана 2026-03-12 211303.png" alt="homimi's Clicker"></h2>
-    <div class="stat">Клики: <b id="clicks">0</b></div>
-    <div class="stat">Сила клика: <b id="cpc">1</b> (x<span id="mult-val">1</span>)</div>
-    <div class="stat">Автоклик: <b id="auto-val">0</b> сек.</div>
 
-    <div class="shop">
-        <p><b>Магазин:</b></p>
-        <button id="buy-power" class="shop-btn">Улучшить клик (+1) — Цена: 100</button>
-        <button id="buy-auto" class="shop-btn">Купить Автоклик (+1/сек) — Цена: 500</button>
-        <button id="btn-rebirth" class="shop-btn rebirth">ПЕРЕРОЖДЕНИЕ (x2 доход) — Цена: 2000</button>
-    </div>
+<div class="container">
+<h2>Homimis Clicker</h2>
 
-    <button id="btn-main">КЛИКАТЬ!</button>
-    </div>
-    <!-- leaderbord -->
-    <div class="leaderbord">
-        <h1>leaderbord:</h1>
-    </div>
+<div class="stat">Клики: <b id="clicks">0</b></div>
+<div class="stat">Сила клика: <b id="cpc">1</b> (x<span id="mult-val">1</span>)</div>
+<div class="stat">Автоклик: <b id="auto-val">0</b> сек.</div>
+
+<div class="shop">
+<p><b>Магазин:</b></p>
+
+<button id="buy-power" class="shop-btn">
+Улучшить клик (+1) — Цена: 100
+</button>
+
+<button id="buy-auto" class="shop-btn">
+Купить Автоклик (+1/сек) — Цена: 500
+</button>
+
+<button id="btn-rebirth" class="shop-btn rebirth">
+ПЕРЕРОЖДЕНИЕ (x2 доход) — Цена: 2000
+</button>
 
 </div>
-<script>
-    // --- 1. ПРОВЕРКА АВТОРИЗАЦИИ ---
-const currentUser = localStorage.getItem('currentUser');
 
-// Если пользователь не залогинен — выкидываем на страницу входа
-if (!currentUser) {
-    window.location.href = 'login.html'; 
+<button id="btn-main">КЛИКАТЬ!</button>
+</div>
+
+<div class="leaderboard container">
+<h1>Leaderboard</h1>
+</div>
+
+</div>
+
+<script>
+
+const currentUser = localStorage.getItem("currentUser");
+
+if(!currentUser){
+location.href = "login.html";
 }
 
-// Ключ для хранения данных именно этого пользователя
-const userKey = `clicker_data_${currentUser}`;
+document.getElementById("logout-btn").innerText =
+"Выйти (" + currentUser + ")";
 
-// --- 2. ЗАГРУЗКА ДАННЫХ ИЗ LOCALSTORAGE ---
-// Пытаемся достать объект с данными, если его нет — создаем стандартный
-let savedData = JSON.parse(localStorage.getItem(userKey)) || { 
-    score: 0, 
-    power: 1, 
-    auto: 0, 
-    mult: 1 
+const userKey = "clicker_data_" + currentUser;
+
+let savedData = JSON.parse(localStorage.getItem(userKey)) || {
+score:0,
+power:1,
+auto:0,
+mult:1
 };
 
 let score = Number(savedData.score);
@@ -56,217 +71,143 @@ let power = Number(savedData.power);
 let auto = Number(savedData.auto);
 let mult = Number(savedData.mult);
 
-// --- 3. ЭЛЕМЕНТЫ ИНТЕРФЕЙСА ---
-const display = document.getElementById('clicks');
-const powerDisplay = document.getElementById('cpc');
-const autoDisplay = document.getElementById('auto-val');
-const multDisplay = document.getElementById('mult-val');
-const leaderboardDiv = document.querySelector('.leaderbord');
+const display = document.getElementById("clicks");
+const powerDisplay = document.getElementById("cpc");
+const autoDisplay = document.getElementById("auto-val");
+const multDisplay = document.getElementById("mult-val");
+const leaderboardDiv = document.querySelector(".leaderboard");
 
-// --- 4. ОСНОВНЫЕ ФУНКЦИИ ---
+function updateUI(){
 
-function updateUI() {
-    // Обновляем текст на экране
-    display.innerText = Math.floor(score);
-    powerDisplay.innerText = power;
-    autoDisplay.innerText = auto;
-    multDisplay.innerText = mult;
-    
-    // Сохраняем прогресс конкретного игрока
-    const dataToSave = { score, power, auto, mult };
-    localStorage.setItem(userKey, JSON.stringify(dataToSave));
-    
-    // Обновляем таблицу лидеров
-    renderLeaderboard();
+display.innerText = Math.floor(score);
+powerDisplay.innerText = power;
+autoDisplay.innerText = auto;
+multDisplay.innerText = mult;
+
+const data = {score,power,auto,mult};
+localStorage.setItem(userKey,JSON.stringify(data));
+
 }
 
-function renderLeaderboard() {
-    leaderboardDiv.innerHTML = '<h1>Leaderboard:</h1>';
-    let allPlayers = [];
+function renderLeaderboard(){
 
-    // Пробегаемся по всему хранилищу браузера
-    for (let i = 0; i < localStorage.length; i++) {
-        let key = localStorage.key(i);
-        
-        // Ищем ключи, которые начинаются на 'clicker_data_'
-        if (key.startsWith('clicker_data_')) {
-            let name = key.replace('clicker_data_', '');
-            let data = JSON.parse(localStorage.getItem(key));
-            allPlayers.push({ name: name, score: data.score });
-        }
-    }
+leaderboardDiv.innerHTML="<h1>Leaderboard</h1>";
 
-    // Сортируем: у кого больше очков — тот выше
-    allPlayers.sort((a, b) => b.score - a.score);
+let players=[];
 
-    // Выводим топ-10 игроков
-    allPlayers.slice(0, 10).forEach((player, index) => {
-        const item = document.createElement('div');
-        item.style.padding = "5px";
-        item.style.borderBottom = "1px solid #444";
-        
-        // Подсвечиваем текущего игрока золотым цветом
-        if (player.name === currentUser) {
-            item.style.color = "#ffd700";
-            item.style.fontWeight = "bold";
-        }
+for(let i=0;i<localStorage.length;i++){
 
-        item.innerHTML = `<span>${index + 1}. ${player.name}</span> — <b>${Math.floor(player.score)}</b>`;
-        leaderboardDiv.appendChild(item);
-    });
+let key=localStorage.key(i);
+
+if(key.startsWith("clicker_data_")){
+
+let name=key.replace("clicker_data_","");
+let data=JSON.parse(localStorage.getItem(key));
+
+players.push({
+name:name,
+score:data.score
+});
+
 }
 
-function logout() {
-    localStorage.removeItem('currentUser');
-    window.location.href = 'login.html';
 }
 
-// --- 5. ОБРАБОТЧИКИ СОБЫТИЙ ---
+players.sort((a,b)=>b.score-a.score);
 
-// Клик по главной кнопке
-document.getElementById('btn-main').addEventListener('click', () => {
-    score += (power * mult);
-    updateUI();
+players.slice(0,10).forEach((p,i)=>{
+
+const div=document.createElement("div");
+
+if(p.name===currentUser){
+div.style.color="gold";
+div.style.fontWeight="bold";
+}
+
+div.innerHTML=`${i+1}. ${p.name} — ${Math.floor(p.score)}`;
+
+leaderboardDiv.appendChild(div);
+
 });
 
-// Покупка силы клика
-document.getElementById('buy-power').addEventListener('click', () => {
-    if (score >= 100) {
-        score -= 100;
-        power += 1;
-        updateUI();
-    } else {
-        alert("Недостаточно кликов!");
-    }
-});
+}
 
-// Покупка автоклика
-document.getElementById('buy-auto').addEventListener('click', () => {
-    if (score >= 500) {
-        score -= 500;
-        auto += 1;
-        updateUI();
-    } else {
-        alert("Недостаточно кликов!");
-    }
-});
+function logout(){
+localStorage.removeItem("currentUser");
+location.href="login.html";
+}
 
-// Перерождение
-document.getElementById('btn-rebirth').addEventListener('click', () => {
-    if (score >= 2000) {
-        if (confirm("Сбросить прогресс ради x2 множителя?")) {
-            score = 0;
-            power = 1;
-            auto = 0;
-            mult *= 2;
-            updateUI();
-        }
-    } else {
-        alert("Нужно 2000 кликов!");
-    }
-});
+document.getElementById("logout-btn").onclick=logout;
 
-// Цикл автоклика (раз в секунду)
-setInterval(() => {
-    if (auto > 0) {
-        score += (auto * mult);
-        updateUI();
-    }
-}, 1000);
+document.getElementById("btn-main").onclick=()=>{
 
-// Инициализация при загрузке страницы
+score += power * mult;
 updateUI();
+
+};
+
+document.getElementById("buy-power").onclick=()=>{
+
+if(score>=100){
+score-=100;
+power++;
+updateUI();
+}else{
+alert("Недостаточно кликов");
+}
+
+};
+
+document.getElementById("buy-auto").onclick=()=>{
+
+if(score>=500){
+score-=500;
+auto++;
+updateUI();
+}else{
+alert("Недостаточно кликов");
+}
+
+};
+
+document.getElementById("btn-rebirth").onclick=()=>{
+
+if(score>=2000){
+
+if(confirm("Сбросить прогресс ради x2?")){
+
+score=0;
+power=1;
+auto=0;
+mult*=2;
+
+updateUI();
+
+}
+
+}else{
+alert("Нужно 2000 кликов");
+}
+
+};
+
+setInterval(()=>{
+
+if(auto>0){
+
+score += auto * mult;
+updateUI();
+
+}
+
+},1000);
+
+setInterval(renderLeaderboard,3000);
+
+updateUI();
+renderLeaderboard();
+
 </script>
-<!-- <script>
-    // Проверка авторизации
-const currentUser = localStorage.getItem('currentUser');
-if (!currentUser) {
-    window.location.href = 'login.html'; // Если не вошел, кидаем на вход
-}
-
-// Приветствие и Кнопка выхода (опционально в HTML добавь id="username")
-// document.getElementById('username').innerText = currentUser;
-
-function logout() {
-    localStorage.removeItem('currentUser');
-    window.location.href = 'login.html';
-}
-
-    // --- ДАННЫЕ (Загрузка или стандарт) ---
-    let score = Number(localStorage.getItem('score')) || 0;
-    let power = Number(localStorage.getItem('power')) || 1;
-    let auto = Number(localStorage.getItem('auto')) || 0;
-    let mult = Number(localStorage.getItem('mult')) || 1;
-
-    // --- ЭЛЕМЕНТЫ ---
-    const display = document.getElementById('clicks');
-    const powerDisplay = document.getElementById('cpc');
-    const autoDisplay = document.getElementById('auto-val');
-    const multDisplay = document.getElementById('mult-val');
-
-    function updateUI() {
-        display.innerText = Math.floor(score);
-        powerDisplay.innerText = power;
-        autoDisplay.innerText = auto;
-        multDisplay.innerText = mult;
-        
-        // Сохранение
-        localStorage.setItem('score', score);
-        localStorage.setItem('power', power);
-        localStorage.setItem('auto', auto);
-        localStorage.setItem('mult', mult);
-    }
-
-    // --- ЛОГИКА ---
-
-    // Обычный клик
-    document.getElementById('btn-main').addEventListener('click', () => {
-        score += (power * mult);
-        updateUI();
-    });
-
-    // Купить +1 к силе
-    document.getElementById('buy-power').addEventListener('click', () => {
-        if (score >= 100) {
-            score -= 100;
-            power += 1;
-            updateUI();
-        }
-    });
-
-    // Купить Автоклик
-    document.getElementById('buy-auto').addEventListener('click', () => {
-        if (score >= 500) {
-            score -= 500;
-            auto += 1;
-            updateUI();
-        }
-    });
-
-    // Перерождение
-    document.getElementById('btn-rebirth').addEventListener('click', () => {
-        if (score >= 2000) {
-            if (confirm("Сбросить прогресс ради удвоения множителя?")) {
-                score = 0;
-                power = 1;
-                auto = 0;
-                mult *= 2; // Удваиваем общий множитель
-                updateUI();
-            }
-        }
-    });
-
-    // ЦИКЛ АВТОКЛИКА (работает раз в секунду)
-    setInterval(() => {
-        if (auto > 0) {
-            score += (auto * mult);
-            updateUI();
-        }
-    }, 1000);
-
-    // Запуск при загрузке
-    updateUI();
-</script> -->
 
 </body>
 </html>
