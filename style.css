@@ -1,5 +1,4 @@
 body { 
-    font-family: sans-serif;
      background: #f0f0f0; 
      display: flex; 
      justify-content: center; 
@@ -41,18 +40,6 @@ body {
     cursor: not-allowed; 
 }
 
-#btn-main { 
-    width: 100%; 
-    height: 120px; 
-    font-size: 24px; 
-    font-weight: bold;
-    background: #4CAF50; 
-    color: white; 
-    border: none; 
-    border-radius: 10px; 
-    cursor: pointer; 
-    margin-top: 15px; 
-}
 
 #btn-main:active { 
     transform: scale(0.98); 
@@ -78,3 +65,83 @@ img{
 .reb:hover{
     background-color: rgb(255, 228, 74);
 }
+
+.main-text {
+    font-family: 'Sigmar One', cursive;
+    text-align: center;
+    color: #00ad4e;
+    font-size: 50px;
+    animation: animate2 25s infinite ease-in-out;
+}
+
+@import url('https://fonts.googleapis.com');
+
+@keyframes animate {
+    0% {
+        background: #4CAF50; 
+    }
+    50% {
+        background: #396e3b
+    }
+    100% {
+        background: #4CAF50
+    }
+}
+
+@keyframes animate2 {
+    0% {
+        color: #af4c4c
+    }
+    7% {
+        color: #b27a00
+    }
+    14% {
+        color: #afa34c
+    }
+
+    21% {
+        color: #00ff3c
+    }
+    28% {
+        color: #00ffee
+    }
+    35% {
+        color: #1900a8
+    }
+
+    42% {
+        color: #360063
+    }
+    49% {
+        color: #1900a8
+    }
+    56% {
+        color: #00ffee
+    }
+
+    63% {
+        color: #00ff3c
+    }
+    70% {
+        color: #afa34c
+    }
+    77% {
+        color: #b27a00
+    }
+    100%{
+        color: #af4c4c;
+    }
+}
+#btn-main { 
+    width: 100%; 
+    height: 120px; 
+    font-size: 24px; 
+    font-weight: bold;
+    color: white; 
+    border: none; 
+    border-radius: 10px; 
+    cursor: pointer; 
+    margin-top: 15px; 
+    animation: animate 5s infinite ease-in-out;
+}
+
