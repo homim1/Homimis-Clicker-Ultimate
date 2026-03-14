@@ -1,8 +1,13 @@
 body { 
-     background: #f0f0f0; 
-     display: flex; 
-     justify-content: center; 
-     padding: 20px; 
+background: #f0f0f0; 
+    display: flex; 
+    justify-content: center; 
+    padding: 20px; 
+    background-image: url(rename.png);
+    background-repeat: no-repeat;           
+    background-size: cover;                 
+    background-position: center;            
+    background-attachment: fixed; 
 }
 
 .container { 
@@ -144,4 +149,13 @@ img{
     margin-top: 15px; 
     animation: animate 5s infinite ease-in-out;
 }
-
+@media all and (max-width: 600px) {
+    .container{
+        width: 95vw;
+        height: auto;
+    }
+    .leaderboard{
+        width: 95vw;
+        height: auto;
+    }
+}
